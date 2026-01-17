@@ -1,0 +1,156 @@
+defaults:
+  account1: "OP-Liu"
+  currency: "EUR"
+  ledger: "默认账本"
+  tag: ""
+  category1: ""
+  category2: ""
+rules:
+  - name: internal-transfer
+    when:
+      remark_contains: ["liu lin"]
+    actions:
+      set:
+        类型: "转账"
+        一级分类: "转账"
+        二级分类: ""
+
+  - name: deposit-transfer
+    when:
+      description_equals: "DEPOSIT"
+    actions:
+      set:
+        类型: "转账"
+        账户1: "Joint"
+        账户2: "OP-Liu"
+        一级分类: "转账"
+
+  - name: code-521-income
+    when:
+      code_equals: "521"
+    actions:
+      set:
+        类型: "收入"
+
+  - name: amount-sign
+    when:
+      amount_exists: true
+    actions:
+      infer_type_from_amount: true
+
+  - name: category-grocery
+    when:
+      remark_contains: ["VFI*VII-VOAN OY","Saiturinporssi","k-market","lidl","alepa","s-market","asian market"]
+    actions:
+      set:
+        一级分类: "餐饮"
+        二级分类: "采购"
+  
+  - name: category-transport-hsl
+    when:
+      remark_contains: ["hsl"]
+    actions:
+      set:
+        一级分类: "交通"
+        二级分类: "公交"
+
+  - name: category-transport-bolt
+    when:
+      remark_contains: ["bolt"]
+    actions:
+      set:
+        一级分类: "交通"
+        二级分类: "打车"
+
+  - name: category-outdoor-eating
+    when:
+      remark_contains: ["Monda by Fyge","Viet Kitchen","wolt", "noodle story", "izza", "raan khao gaeng","Snack2You","AHAAN TAM SANG"]
+    actions:
+      set:
+        一级分类: "餐饮"
+        二级分类: "外食"
+
+  - name: category-entertainment
+    when:
+      remark_contains: ["FTC HELSINKI KAMPPI HELSINKI"]
+    actions:
+      set:
+        一级分类: "娱乐"
+
+  - name: category-sports
+    when:
+      remark_contains: ["Allas Sea Pool"]
+    actions:
+      set:
+        一级分类: "运动"
+
+  - name: category-telecom
+    when:
+      remark_contains: ["TELIA"]
+    actions:
+      set:
+        一级分类: "通讯"
+
+  - name: category-pharmacy
+    when:
+      remark_contains: ["apteekki"]
+    actions:
+      set:
+        一级分类: "医疗"
+        二级分类: "药品"
+
+  - name: category-alko
+    when:
+      remark_contains: ["alko"]
+    actions:
+      set:
+        一级分类: "烟酒"
+
+  - name: category-shopping
+    when:
+      remark_contains: ["normal","Granit Forum", "Zalando","H&M","Stockmann","Decathlon","Gigantti"]
+    actions:
+      set:
+        一级分类: "购物"
+
+  - name: category-benefit
+    when:
+      remark_contains: ["KELA/FPA"]
+    actions:
+      set:
+        一级分类: "福利"
+
+  - name: category-bank-fee
+    when:
+      remark_contains: ["OSUUSPANKKI"]
+    actions:
+      set:
+        一级分类: "其他"
+
+  - name: label-thai-food
+    when:
+      remark_contains: ["raan khao gaeng","AHAAN TAM SANG"]
+    actions:
+      set:
+        标签: "Thai-food"
+
+  - name: label-viet-food
+    when:
+      remark_contains: ["Viet Kitchen"]
+    actions:
+      set:
+        标签: "Viet-food"
+
+  - name: label-sports
+    when:
+      remark_contains: ["Allas Sea Pool"]
+    actions:
+      set:
+        标签: "Sports"
+
+  - name: label-benefit
+    when:
+      remark_contains: ["KELA/FPA"]
+    actions:
+      set:
+        标签: "Benefit"
