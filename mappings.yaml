@@ -8,12 +8,11 @@ defaults:
 rules:
   - name: internal-transfer
     when:
-      remark_contains: ["liu lin"]
+      remark_contains: ["liu lin", "MA XINYUAN"]
     actions:
       set:
         类型: "转账"
         一级分类: "转账"
-        二级分类: ""
 
   - name: deposit-transfer
     when:
@@ -25,12 +24,29 @@ rules:
         账户2: "OP-Liu"
         一级分类: "转账"
 
+  - name: bank-transfer-ma-xinyuan
+    when:
+      all:
+        - description_equals: "BANK TRANSFER"
+        - remark_contains: ["MA XINYUAN"]
+    actions:
+      set:
+        类型: "转账"
+        账户1: "OP"
+        账户2: "OP-Liu"
+        一级分类: "转账"
+
   - name: code-521-income
     when:
       code_equals: "521"
     actions:
       set:
         类型: "收入"
+    when:
+      code_equals: "506"
+    actions:
+      set:
+        类型: "转账"
 
   - name: amount-sign
     when:
@@ -40,7 +56,7 @@ rules:
 
   - name: category-grocery
     when:
-      remark_contains: ["VFI*VII-VOAN OY","Saiturinporssi","k-market","lidl","alepa","s-market","asian market"]
+      remark_contains: ["JIAHE","SALE HOYHTYA","VFI*VII-VOAN OY","Saiturinporssi","k-market","lidl","alepa","s-market","asian market"]
     actions:
       set:
         一级分类: "餐饮"
@@ -54,6 +70,13 @@ rules:
         一级分类: "交通"
         二级分类: "公交"
 
+  - name: category-investment
+    when:
+      remark_contains: ["J.P. Morgan SE"]
+    actions:
+      set:
+        一级分类: "投资"
+
   - name: category-transport-bolt
     when:
       remark_contains: ["bolt"]
@@ -64,7 +87,7 @@ rules:
 
   - name: category-outdoor-eating
     when:
-      remark_contains: ["Monda by Fyge","Viet Kitchen","wolt", "noodle story", "izza", "raan khao gaeng","Snack2You","AHAAN TAM SANG"]
+      remark_contains: ["BEEFY QUEEN KY","VFI*SEKSICO FOODS O HELSINKI","Monda by Fyge","Viet Kitchen","wolt", "noodle story", "izza", "raan khao gaeng","Snack2You","AHAAN TAM SANG"]
     actions:
       set:
         一级分类: "餐饮"
@@ -79,7 +102,7 @@ rules:
 
   - name: category-sports
     when:
-      remark_contains: ["Allas Sea Pool"]
+      remark_contains: ["Allas Sea Pool","Easymove"]
     actions:
       set:
         一级分类: "运动"

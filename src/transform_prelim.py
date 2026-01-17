@@ -54,24 +54,42 @@ def apply_mappings(out: dict, row: dict, mappings: dict):
     for rule in rules:
         when = rule.get('when', {})
         match = False
-        # description equals
-        if 'description_equals' in when:
-            if (row.get('Description', '') or '').strip().upper() == when['description_equals'].strip().upper():
-                match = True
-        # code equals
-        if not match and 'code_equals' in when:
-            if (row.get('Code', '') or '').strip() == str(when['code_equals']):
-                match = True
-        # amount exists
-        if not match and when.get('amount_exists'):
-            if (row.get('Amount EUR', '') or '').strip() != '':
-                match = True
-        # remark contains
-        if not match and 'remark_contains' in when:
-            for kw in when['remark_contains']:
-                if kw.lower() in note_lower:
-                    match = True
-                    break
+
+        def eval_simple(cond: dict) -> bool:
+            # cond is a mapping like {'description_equals': 'DEPOSIT'} or {'remark_contains': ['x']}
+            if 'description_equals' in cond:
+                return (row.get('Description', '') or '').strip().upper() == cond['description_equals'].strip().upper()
+            if 'code_equals' in cond:
+                return (row.get('Code', '') or '').strip() == str(cond['code_equals'])
+            if cond.get('amount_exists'):
+                return (row.get('Amount EUR', '') or '').strip() != ''
+            if 'remark_contains' in cond:
+                for kw in cond['remark_contains']:
+                    if kw.lower() in note_lower:
+                        return True
+                return False
+            return False
+
+        # support composite conditions: 'all' or 'any' list of condition dicts
+        if 'all' in when:
+            conds = when.get('all', [])
+            match = all(eval_simple(c) for c in conds)
+        elif 'any' in when:
+            conds = when.get('any', [])
+            match = any(eval_simple(c) for c in conds)
+        else:
+            # legacy: if multiple simple keys present in when, treat as OR across them
+            # Build simple condition dicts for each present key
+            simple_conds = []
+            if 'description_equals' in when:
+                simple_conds.append({'description_equals': when['description_equals']})
+            if 'code_equals' in when:
+                simple_conds.append({'code_equals': when['code_equals']})
+            if when.get('amount_exists'):
+                simple_conds.append({'amount_exists': True})
+            if 'remark_contains' in when:
+                simple_conds.append({'remark_contains': when['remark_contains']})
+            match = any(eval_simple(c) for c in simple_conds)
 
         if match:
             actions = rule.get('actions', {})
