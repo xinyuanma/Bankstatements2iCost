@@ -5,9 +5,15 @@ import yaml
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-IN_FILE = ROOT / 'bankstatements' / 'transactions20251201-20260117.csv'
+IN_FILE = ROOT / 'bankstatements' / 'transactions.csv'
 OUT_DIR = ROOT / 'samples'
 OUT_FILE = OUT_DIR / 'converted_example.csv'
+
+# NOTE: The module provides `transform_file(in_path, out_path, mappings_path)` and a
+# CLI entrypoint. The constants above are legacy defaults kept for backward
+# compatibility so `python src/transform_prelim.py` continues to work. Prefer using
+# the CLI or `transform_file()` directly. These defaults may be removed in future
+# major releases.
 
 OUT_DIR.mkdir(exist_ok=True)
 
@@ -262,7 +268,32 @@ def transform_row(row: dict, mappings: dict = None) -> dict:
     return out
 
 def main():
-    with IN_FILE.open('r', encoding='utf-8') as f:
+    # Issue a deprecation warning when running the script directly so users migrate
+    # to the CLI or call transform_file() explicitly.
+    import warnings
+    warnings.warn(
+        "Direct script execution with built-in IN_FILE/OUT_FILE defaults is deprecated; use the bank2csv CLI or transform_file() instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    # call transform_file with defaults
+    transform_file(IN_FILE, OUT_FILE, ROOT / 'mappings.yaml')
+
+
+def transform_file(in_path, out_path, mappings_path=None, defaults_override=None):
+    """Transform `in_path` CSV -> `out_path` CSV using mappings at `mappings_path`.
+    `in_path`/`out_path` can be strings or Path objects. If `mappings_path` is None,
+    defaults to ROOT / 'mappings.yaml'.
+
+    If `defaults_override` is provided (a dict), its keys will override
+    `mappings['defaults']` for this run. This allows overriding defaults from
+    environment variables or CLI options without editing the YAML file.
+    """
+    in_path = Path(in_path)
+    out_path = Path(out_path)
+    mappings_path = Path(mappings_path) if mappings_path is not None else (ROOT / 'mappings.yaml')
+
+    with in_path.open('r', encoding='utf-8') as f:
         reader = csv.DictReader(f, delimiter=';', quotechar='"')
         raw_rows = list(reader)
 
@@ -281,7 +312,17 @@ def main():
             clean[key] = val
         rows.append(clean)
 
-    mappings = load_mappings(ROOT / 'mappings.yaml')
+    mappings = load_mappings(mappings_path)
+    # Apply any runtime overrides for defaults (e.g., from .env or CLI options)
+    if defaults_override:
+        if mappings is None:
+            mappings = {}
+        if 'defaults' not in mappings or mappings['defaults'] is None:
+            mappings['defaults'] = {}
+        # Only set keys present in overrides (do not remove existing defaults)
+        for k, v in (defaults_override or {}).items():
+            if v is not None and v != '':
+                mappings['defaults'][k] = v
     transformed = [transform_row(r, mappings) for r in rows]
 
     # Map A-K to the requested Chinese column names:
@@ -299,7 +340,10 @@ def main():
         '账本',  # K
     ]
 
-    with OUT_FILE.open('w', encoding='utf-8', newline='') as f:
+    out_dir = out_path.parent
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    with out_path.open('w', encoding='utf-8', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=chinese_fields)
         writer.writeheader()
         for r in transformed:
@@ -318,7 +362,7 @@ def main():
             }
             writer.writerow(row)
 
-    print(f'Wrote {len(transformed)} rows to {OUT_FILE}')
+    print(f'Wrote {len(transformed)} rows to {out_path}')
 
 if __name__ == '__main__':
     main()

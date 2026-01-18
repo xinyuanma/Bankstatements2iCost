@@ -1,3 +1,39 @@
+# bank2csv
+
+A small CLI tool to convert bank CSV statements (semicolon-delimited, European decimal commas) into a target CSV format suitable for importing into your accounting software. The conversion is rule-driven using `mappings.yaml` so you can tune category/label mappings without changing code.
+
+Quick start
+
+1. Install in editable mode (recommended during development):
+
+   ```bash
+   python3 -m pip install -e .
+   ```
+
+2. Run the converter (examples):
+
+   ```bash
+   bank2csv -i bankstatements/lin-transactions20251215-20260115.csv -o samples/converted.csv -m mappings.yaml
+   # or using the script directly
+   python3 src/transform_prelim.py -i bankstatements/lin-transactions20251215-20260115.csv -o samples/converted.csv -m mappings.yaml
+   ```
+
+3. Configure defaults via `.env` or CLI flags `--default-account1` and `--default-currency`.
+
+What to commit
+
+- `src/` containing the converter and the CLI entrypoint
+- `mappings.yaml` (your rule set)
+- `pyproject.toml` and `requirements.txt` / lockfile if present
+- `README.md`, `.gitignore`, and small docs like `COMMIT_CHECKLIST.md`
+
+What not to commit
+
+- Virtual environments (e.g. `.venv/`)
+- Installed package artifacts and caches
+- Secrets (API keys, full `.env` with credentials)
+
+If you'd like, I can add CI config or a more detailed developer guide next.
 # Bank statements → iCost converter
 
 Small Python utility that converts bank statement CSVs (from `bankstatements/`) into a CSV formatted for import into your bookkeeping software (`samples/converted_example.csv`). The conversion is driven by a YAML rule file so non-developers can adjust categorization and defaults without touching code.
