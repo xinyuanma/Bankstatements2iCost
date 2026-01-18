@@ -1,5 +1,5 @@
 defaults:
-  account1: "OP-Liu"
+  account1: "OP"
   currency: "EUR"
   ledger: "默认账本"
   tag: ""
@@ -21,8 +21,17 @@ rules:
       set:
         类型: "转账"
         账户1: "Joint"
-        账户2: "OP-Liu"
+        账户2: "OP"
         一级分类: "转账"
+
+  - name: deposit-interest
+    when:
+      description_equals: "DEPOSIT INTRST"
+    actions:
+      set:
+        类型: "收入"
+        一级分类: "投资"
+        二级分类: "利息收入"
 
   - name: bank-transfer-ma-xinyuan
     when:
@@ -33,7 +42,19 @@ rules:
       set:
         类型: "转账"
         账户1: "OP"
-        账户2: "OP-Liu"
+        账户2: "OP"
+        一级分类: "转账"
+
+  - name: bank-transfer-pohjola
+    when:
+      all:
+        - code_equals: "506"
+        - remark_contains: ["POHJOLA"]
+    actions:
+      set:
+        类型: "转账"
+        账户1: ""
+        账户2: "OP"
         一级分类: "转账"
 
   - name: code-521-income
@@ -42,11 +63,6 @@ rules:
     actions:
       set:
         类型: "收入"
-    when:
-      code_equals: "506"
-    actions:
-      set:
-        类型: "转账"
 
   - name: amount-sign
     when:
@@ -56,56 +72,179 @@ rules:
 
   - name: category-grocery
     when:
-      remark_contains: ["JIAHE","SALE HOYHTYA","VFI*VII-VOAN OY","Saiturinporssi","k-market","lidl","alepa","s-market","asian market"]
+      remark_contains: ["T:mi Merja Valo","MONOP DAILY", "ABC", "K-Citymarket", "Lihakauppa","K-Supermarket","OULUN LIHA", "VFI*BOBAY OY","PRISMA","AASIA MARKET", "VFI*KH FOOD SERVICE ESPOO", "OY GOLDEN CROP", "JIAHE","SALE HOYHTYA","VFI*VII-VOAN OY","Saiturinporssi","k-market","lidl","alepa","s-market","asian market"]
     actions:
       set:
         一级分类: "餐饮"
         二级分类: "采购"
-  
-  - name: category-transport-hsl
-    when:
-      remark_contains: ["hsl"]
-    actions:
-      set:
-        一级分类: "交通"
-        二级分类: "公交"
-
-  - name: category-investment
-    when:
-      remark_contains: ["J.P. Morgan SE"]
-    actions:
-      set:
-        一级分类: "投资"
-
-  - name: category-transport-bolt
-    when:
-      remark_contains: ["bolt"]
-    actions:
-      set:
-        一级分类: "交通"
-        二级分类: "打车"
 
   - name: category-outdoor-eating
     when:
-      remark_contains: ["BEEFY QUEEN KY","VFI*SEKSICO FOODS O HELSINKI","Monda by Fyge","Viet Kitchen","wolt", "noodle story", "izza", "raan khao gaeng","Snack2You","AHAAN TAM SANG"]
+      remark_contains: ["BARVALUE OY", "SEURASAARISEETI","FASELLI", "Kakkugalleria Stock","seastea","Sinisen Huvilan Kah", "HAPPY SUNSHINE OY", "Vanhan Porvoon Jaat Porvoo", "petiscaria","TEEMAA", "Kahvisiskot", "NOM VIETNAMESE KITC HELSINKI", "CAFE","DALBUDAK HACI", "MAGI OY JAATELO", "GRILLI", "Klande","Espresso House","donuts","Mala Master", "Kakkugalleria Lyyra", "Delhi Rasoi Oy", "TAPERIA HELS HELSINKI","LA TORREFAZION","CAFETORIA", "JOE  THE JUICE", "LANNY FOOD", "Compass Group Finla Helsinki","HUADU HAKANIEMI", "KFC", "Restau","MCDHELSINKIHAKANIEM", "CAFE REGATTA", "Rotuaarin", "HALF BUBBLE OY", "KIM Cafe", "Pho Dat Viet", "Ravinto","Ravintola","VFI*VANTRAN GROUP O HELSINKI", "VFI*TOMORROW FRIEND HELSINKI","Cafelito Oy","VFI*YURTUM OY", "Tian Yong OY", "HAKATORIAPT","BEEFY QUEEN KY","VFI*SEKSICO FOODS O HELSINKI","Monda by Fyge","Viet Kitchen","wolt", "noodle story", "izza", "raan khao gaeng","Snack2You","AHAAN TAM SANG"]
     actions:
       set:
         一级分类: "餐饮"
         二级分类: "外食"
 
+  - name: category-shopping
+    when:
+      remark_contains: ["Elokaunokki", "THE MOOMIN SHOP", "Aarteet Kiertoon", "NILA KUKKAK ESPOO", "PEEKAUPUNKISEUD","SOESTRENE GRENE","Etola","BAGS4U","LE CREUSET", "Marimekko","Paytrail","GLITTER FORUM","MUSTI JA MIRRI", "Helsinki Kamppi","FISKARS","Syvasen Kukka","Indiska","Granit Forum","Stockmann","Decathlon","Gigantti"]
+    actions:
+      set:
+        一级分类: "购物"
+
+  - name: category-clothes
+    when:
+      remark_contains: ["PARTIOAITTA","H&M","Zalando","zara","HM FI"]
+    actions:
+      set:
+        一级分类: "服饰"
+
+  - name: category-daily-needs
+    when:
+      remark_contains: ["FINLAYSON", "normal","TOKMANNI","CLAS OHLSON","IKEA","VERKKOKAUPPA"]
+    actions:
+      set:
+        一级分类: "日用"
+  - name : category-beauty
+    when:
+      remark_contains: ["KICKS","Sokos","SEPHORA"]
+    actions:
+      set:
+        一级分类: "美妆"
+             
+  - name: category-sports
+    when:
+      remark_contains: ["STADIUM FORUM","Oulun seudun liiken", "Allas Sea Pool","Easymove"]
+    actions:
+      set:
+        一级分类: "运动"
+
   - name: category-entertainment
     when:
-      remark_contains: ["FTC HELSINKI KAMPPI HELSINKI"]
+      remark_contains: ["TMI BLACK SMOKE", "Helsingin kaupunki", "KARUJARVI", "FINNKINO","Oulu Safaris", "FTC HELSINKI KAMPPI HELSINKI"]
     actions:
       set:
         一级分类: "娱乐"
 
-  - name: category-sports
+  - name: category-transport-hsl
     when:
-      remark_contains: ["Allas Sea Pool","Easymove"]
+      remark_contains: ["RYDE", "Oulun kaupunki", "hsl", "HELSINGIN S HELSINKI"]
     actions:
       set:
-        一级分类: "运动"
+        一级分类: "交通"
+        二级分类: "公交"
+
+  - name: category-scooter 
+    when:
+      remark_contains: ["RYDE"]
+    actions:
+      set:
+        一级分类: "交通"
+        二级分类: "Scooter"
+
+  - name: category-train
+    when:
+      remark_contains: ["VR"]
+    actions:
+      set:
+        一级分类: "交通"
+        二级分类: "火车"
+
+  - name: category-investment
+    when:
+      any:
+        - recipient_account_contains: ["LT733250055233186146"]
+        - remark_contains: ["J.P. Morgan SE"]
+    actions:
+      set:
+        一级分类: "投资"
+
+  - name: category-withdrawal
+    when:
+      all:
+        - code_equals: "592"
+        - description_equals: "CROSSBORDER TRF"
+        - remark_contains: "TRADING 212 MARKETS LTD"
+    actions:
+      set:
+        一级分类: "投资"
+        二级分类: "提现"
+
+  - name: category-pay-credit-card-1
+    when:
+      all:
+        - code_equals: "104"
+        - description_equals: "INTERNAL TRNSF"
+        - remark_contains: ["OP VÄHITTÄISASIAKKAAT OYJ"]
+    actions:
+      set:
+        一级分类: "还款"
+
+  - name: category-pay-credit-card-2
+    when:
+      remark_contains: ["OP Retail Customers Plc"]
+    actions:
+      set:
+        一级分类: "还款"
+
+  - name: category-rent
+    when:
+      remark_contains: ["Ella Pajunen"]
+    actions:
+      set:
+        一级分类: "住房"
+        二级分类: "房租"
+
+  - name: category-utility
+    when:
+      remark_contains: ["Helen Sähköverkko Oy", "Väre Oy"]
+    actions:
+      set:
+        一级分类: "住房"
+        二级分类: "水电费"
+
+  - name: category-revolut
+    when:
+      all:
+        - code_equals: "162"
+        - remark_contains: ["Revolut**0549*"]
+    actions:
+      set:
+        一级分类: "转账"
+        账户2: "Revolut"
+
+  - name: category-insurance
+    when:
+      remark_contains: ["Pohjola Vakuutus Oy"]
+    actions:
+      set:
+        一级分类: "医疗"
+        二级分类: "保险"
+
+  - name: category-tax
+    when:
+      remark_contains: ["Lähdeverot/Källskatt"]
+    actions:
+      set:
+        一级分类: "税收"
+
+  - name: category-tax-refund
+    when:
+      all:
+        - code_equals: "506"
+        - remark_contains: ["VEROHALLINTO"]
+    actions:
+      set:
+        一级分类: "退税"
+
+  - name: category-transport-bolt
+    when:
+      remark_contains: ["UBER","bolt"]
+    actions:
+      set:
+        一级分类: "交通"
+        二级分类: "打车"
 
   - name: category-telecom
     when:
@@ -114,9 +253,26 @@ rules:
       set:
         一级分类: "通讯"
 
+  - name: category-hospital
+    when :
+      remark_contains: ["ITAKESKUKSEN PO", "Mehiläinen","Klinikka","FYSIOTERAPIA","Terveystalo","Lääkärikeskus","Pihlajalinna"]
+    actions:
+      set:
+        一级分类: "医疗"
+        二级分类: "门诊"
+
+  - name: category-payment-on-behalf
+    when:
+      all:
+        - code_equals: "506"
+        - remark_contains: ["SU RUOYU", "VIPPS MOBILEPAY AS"]
+    actions:
+      set:
+        一级分类: "代付"
+
   - name: category-pharmacy
     when:
-      remark_contains: ["apteekki"]
+      remark_contains: ["YA KESKUSTA","apteekk","PHARMACIE"]
     actions:
       set:
         一级分类: "医疗"
@@ -129,12 +285,12 @@ rules:
       set:
         一级分类: "烟酒"
 
-  - name: category-shopping
+  - name: category-salary
     when:
-      remark_contains: ["normal","Granit Forum", "Zalando","H&M","Stockmann","Decathlon","Gigantti"]
+      remark_contains: ["NOKIA SOLUTIONS AND NETWORKS OY"]
     actions:
       set:
-        一级分类: "购物"
+        一级分类: "工资"
 
   - name: category-benefit
     when:
@@ -159,7 +315,7 @@ rules:
 
   - name: label-viet-food
     when:
-      remark_contains: ["Viet Kitchen"]
+      remark_contains: ["KIM Cafe", "Pho Dat Viet","Viet Kitchen","NOM VIETNAMESE KITC HELSINKI"]
     actions:
       set:
         标签: "Viet-food"
@@ -177,3 +333,58 @@ rules:
     actions:
       set:
         标签: "Benefit"
+
+  - name: vacation-mode
+  # Copenhagen holiday trip 2025-09-06 to 2026-09-10
+    when:
+      date_between:
+        start: "2025-09-06"
+        end: "2025-09-10"
+    actions:
+      set:
+        一级分类: "度假"
+        二级分类: ""
+        标签: "Vacation - Copenhagen"
+
+  - name: vacation-mode
+  # Paris holiday trip 2025-04-10 to 2025-04-14
+    when:
+      date_between:
+        start: "2025-04-10"
+        end: "2025-04-14"
+    actions:
+      set:
+        一级分类: "度假"
+        二级分类: ""
+        标签: "Vacation - Paris"
+
+  - name: vacation-mode
+  # Tallin holiday trip 2025-06-30 to 2025-06-30
+    when:
+      date_between:
+        start: "2025-06-30"
+        end: "2025-06-30"
+    actions:
+      set:
+        一级分类: "度假"
+        二级分类: ""
+        标签: "Vacation - Tallinn"
+
+# === Example rules inserted by assistant ===
+  - name: example-specific-transaction-2025-12-19
+    when:
+      all:
+        - date_equals: "2025-12-19"
+        - remark_contains: ["LIIKENNE- JA VIESTINTÄVIRASTO"]
+    actions:
+      set:
+        一级分类: "退款"
+  
+  - name: example-specific-transaction-2025-12-22
+    when:
+      all:
+        - date_equals: "2025-12-22"
+        - remark_contains: ["HYUNJIN KIM"]
+    actions:
+      set:
+        一级分类: "餐饮"

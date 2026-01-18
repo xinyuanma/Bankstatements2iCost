@@ -5,7 +5,7 @@ import yaml
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-IN_FILE = ROOT / 'bankstatements' / 'transactions20250101-20251221.csv'
+IN_FILE = ROOT / 'bankstatements' / 'transactions20251201-20260117.csv'
 OUT_DIR = ROOT / 'samples'
 OUT_FILE = OUT_DIR / 'converted_example.csv'
 
@@ -51,6 +51,13 @@ def apply_mappings(out: dict, row: dict, mappings: dict):
     note = (out.get('H') or '')
     note_lower = note.lower()
 
+    # parse amount into numeric for condition checks
+    amt_val = None
+    try:
+        amt_val = float(parse_amount(row.get('Amount EUR', '0')))
+    except Exception:
+        amt_val = None
+
     for rule in rules:
         when = rule.get('when', {})
         match = False
@@ -66,6 +73,75 @@ def apply_mappings(out: dict, row: dict, mappings: dict):
             if 'remark_contains' in cond:
                 for kw in cond['remark_contains']:
                     if kw.lower() in note_lower:
+                        return True
+                return False
+            # date_between: expect dict with 'start' and 'end' in YYYY-MM-DD
+            if 'date_between' in cond:
+                dr = cond['date_between']
+                start = dr.get('start')
+                end = dr.get('end')
+                # row date is in out['A'] or fields EntryDate/ValueDate
+                date_val = (row.get('EntryDate', '') or row.get('ValueDate', '') or out.get('A', ''))
+                try:
+                    from datetime import datetime
+                    d = datetime.strptime(date_val.split()[0], '%Y-%m-%d').date()
+                    s = datetime.strptime(start, '%Y-%m-%d').date() if start else None
+                    e = datetime.strptime(end, '%Y-%m-%d').date() if end else None
+                    if s and d < s:
+                        return False
+                    if e and d > e:
+                        return False
+                    return True
+                except Exception:
+                    return False
+            # date_equals: match a specific YYYY-MM-DD date string
+            if 'date_equals' in cond:
+                date_val = (row.get('EntryDate', '') or row.get('ValueDate', '') or out.get('A', ''))
+                try:
+                    from datetime import datetime
+                    d = datetime.strptime(date_val.split()[0], '%Y-%m-%d').date()
+                    target = datetime.strptime(cond['date_equals'], '%Y-%m-%d').date()
+                    return d == target
+                except Exception:
+                    return False
+            # amount sign checks
+            if 'amount_negative' in cond:
+                if amt_val is None:
+                    return False
+                return amt_val < 0
+            if 'amount_positive' in cond:
+                if amt_val is None:
+                    return False
+                return amt_val > 0
+            
+            
+            # recipient/payer contains
+            if 'recipient_contains' in cond:
+                recip = (row.get('Recipient/Payer', '') or '')
+                if isinstance(cond['recipient_contains'], list):
+                    for kw in cond['recipient_contains']:
+                        if kw.lower() in recip.lower() or kw.lower() in (out.get('H') or '').lower():
+                            return True
+                    return False
+                else:
+                    return cond['recipient_contains'].lower() in recip.lower() or cond['recipient_contains'].lower() in (out.get('H') or '').lower()
+
+            # recipient account number contains: look for any column name containing 'account', 'iban' or 'bban'
+            if 'recipient_account_contains' in cond:
+                keywords = cond['recipient_account_contains']
+                if not isinstance(keywords, list):
+                    keywords = [keywords]
+                # search likely account columns in row keys
+                account_cols = [k for k in row.keys() if k and ('account' in k.lower() or 'iban' in k.lower() or 'bban' in k.lower())]
+                for col in account_cols:
+                    val = (row.get(col, '') or '')
+                    for kw in keywords:
+                        if kw.lower() in val.lower():
+                            return True
+                # fallback: also check Recipient/Payer field
+                recip = (row.get('Recipient/Payer', '') or '')
+                for kw in keywords:
+                    if kw.lower() in recip.lower():
                         return True
                 return False
             return False
@@ -89,9 +165,21 @@ def apply_mappings(out: dict, row: dict, mappings: dict):
                 simple_conds.append({'amount_exists': True})
             if 'remark_contains' in when:
                 simple_conds.append({'remark_contains': when['remark_contains']})
-            match = any(eval_simple(c) for c in simple_conds)
+            if simple_conds:
+                match = any(eval_simple(c) for c in simple_conds)
+            else:
+                # when contains non-standard simple conditions (like date_between);
+                # evaluate the whole when dict as a single condition
+                match = eval_simple(when)
 
         if match:
+            # Special-case: enforce that the 'vacation-mode' rule only applies to expenses (negative amounts).
+            # The user requested this logic live in the script rather than encoded in mappings.yaml.
+            rule_name = rule.get('name', '')
+            if rule_name == 'vacation-mode':
+                if amt_val is None or amt_val >= 0:
+                    # skip applying this rule for non-expenses
+                    continue
             actions = rule.get('actions', {})
             # infer type from amount
             if actions.get('infer_type_from_amount') and out.get('B', '') == '':
