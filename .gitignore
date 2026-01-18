@@ -1,4 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.mypy_cache/
+.pytest_cache/
+
+# Virtual env
+.venv/
+env/
+venv/
+
+# Editor files
+.vscode/
+*.swp
+
+# Build / packaging
+dist/
+build/
+*.egg-info/
+
+# Byte-compiled / logs
+*.log
+
+# Ignore env files with secrets by default
+.env
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtualenv
+.venv/
+venv/
+env/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+docs/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+
+# Local data / outputs (keep bank data out of git)
 bankstatements/
 samples/
-.venv/
-docs/
+
+# dotenv (do not commit real env)
+.env

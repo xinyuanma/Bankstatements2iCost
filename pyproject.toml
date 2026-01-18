@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bank2csv"
+version = "0.1.0"
+description = "Bank statements -> bookkeeping CSV converter"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = ["PyYAML", "python-dotenv", "click"]
+
+[project.scripts]
+bank2csv = "bank2csv.cli:cli"
