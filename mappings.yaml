@@ -334,6 +334,68 @@ rules:
       set:
         标签: "Benefit"
 
+  - name: category-sodexo-canteen
+    when:
+      remark_contains: ["SODEXO OY NOKIA"]
+    actions:
+      set:
+        一级分类: "餐饮"
+        二级分类: "外食"
+
+  - name: category-fast-food-build
+    when:
+      remark_contains: ["FAST FOOD BUILD"]
+    actions:
+      set:
+        一级分类: "餐饮"
+        二级分类: "外食"
+
+  - name: category-varikko-panimo
+    when:
+      remark_contains: ["Varikko Panimo"]
+    actions:
+      set:
+        一级分类: "餐饮"
+        二级分类: "外食"
+
+  - name: category-apple-subscription
+    when:
+      remark_contains: ["APPLE.COM/BILL", "ITUNES.COM"]
+    actions:
+      set:
+        一级分类: "娱乐"
+        二级分类: "订阅"
+
+  - name: category-verifone
+    when:
+      remark_contains: ["VERIFONE FINLAND"]
+    actions:
+      set:
+        一级分类: "其他"
+
+  - name: category-tek-union-fee
+    when:
+      remark_contains: ["Tekniikan akateemiset"]
+    actions:
+      set:
+        一级分类: "其他"
+        二级分类: "会费"
+
+  - name: category-asema-station
+    when:
+      remark_contains: ["Asema_Grand_C"]
+    actions:
+      set:
+        一级分类: "交通"
+        二级分类: "火车"
+
+  - name: category-salmi-refund
+    when:
+      remark_contains: ["SALMISAARI"]
+    actions:
+      set:
+        一级分类: "退款"
+
   - name: vacation-mode
   # Copenhagen holiday trip 2025-09-06 to 2026-09-10
     when:
